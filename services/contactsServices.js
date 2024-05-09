@@ -1,13 +1,12 @@
-import { readFile, writeFile } from "fs/promises";
-
 import path from "path";
 import { nanoid } from "nanoid";
+import * as fs from "fs/promises";
 
 const contactsPath = path.resolve("db", "contacts.json");
 
 export async function listContacts() {
   try {
-    const contacts = await readFile(contactsPath, "utf-8");
+    const contacts = await fs.readFile(contactsPath, "utf-8");
     return JSON.parse(contacts);
   } catch (error) {
     console.error("Error reading", error);
@@ -34,7 +33,7 @@ export async function removeContact(contactId) {
       return null;
     }
     const [result] = contacts.splice(index, 1);
-    await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return result;
   } catch (error) {
     console.error("Error removing", error);
@@ -47,7 +46,7 @@ export async function addContact(name, email, phone) {
     const newContact = { id: nanoid(), name, email, phone };
     const allContacts = await listContacts();
     allContacts.push(newContact);
-    await writeFile(contactsPath, JSON.stringify(allContacts, null, 2));
+    await fs.writeFile(contactsPath, JSON.stringify(allContacts, null, 2));
     return newContact;
   } catch (error) {
     console.error("Error adding", error);
@@ -55,18 +54,17 @@ export async function addContact(name, email, phone) {
   }
 }
 
-export async function updateContactById(id, contact) {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === id);
-  if (index === -1) {
-    return null;
-  }
-
-  const updContact = { ...contacts[index], ...contact };
-  contacts[index] = updContact;
+export async function updateContactById(id, updContact) {
   try {
+    const contacts = await listContacts();
+    const index = contacts.findIndex((contact) => contact.id === id);
+    if (index === -1) {
+      return null;
+    }
+
+    contacts[index] = { ...contacts[index], ...updContact };
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return updContact;
+    return contacts[index];
   } catch (error) {
     throw error;
   }
