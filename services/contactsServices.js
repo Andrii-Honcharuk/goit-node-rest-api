@@ -1,8 +1,9 @@
-import fs from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
+
 import path from "path";
 import { nanoid } from "nanoid";
 
-const contactsPath = join("db", "db/contacts.json");
+const contactsPath = path.resolve("db", "contacts.json");
 
 export async function listContacts() {
   try {
