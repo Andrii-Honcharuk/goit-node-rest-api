@@ -1,5 +1,8 @@
 import HttpError from "../helpers/HttpError.js";
-import { createContactSchema } from "../schemas/contactsSchemas.js";
+import {
+  createContactSchema,
+  updateContactSchema,
+} from "../schemas/contactsSchemas.js";
 import {
   addContact,
   getContactById,
@@ -29,13 +32,6 @@ export const getOneContact = async (req, res, next) => {
     next(error);
   }
 };
-
-/* DELETE /api/contacts/:id
-Викликає функцію-сервіс removeContact для роботи з json-файлом contacts.json
-
-Якщо контакт за id знайдений і видалений, повертає об'єкт видаленого контакту в json-форматі зі статусом 200
-
-Якщо контакт за id не знайдено, повертає json формату {"message": "Not found"} зі статусом 404*/
 
 export const deleteContact = async (req, res, next) => {
   const { id } = req.params;
@@ -71,7 +67,20 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   try {
+    // empty
+    if (Object.keys(req.body).length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Body must have at least one field" });
+    }
+    // validation
+    const { error } = updateContactSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+
     const updContact = await updateContactById(req.params.id, req.body);
+
     if (!updateContactById) {
       return res.status(404).json({ message: "Not found" });
     }
