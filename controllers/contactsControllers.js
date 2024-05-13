@@ -72,17 +72,16 @@ export const updateContact = async (req, res, next) => {
         .status(400)
         .json({ message: "Body must have at least one field" });
     }
+    const updContact = await updateContactById(req.params.id, req.body);
+    if (!updContact) {
+      return res.status(404).json({ message: "Not found" });
+    }
 
     const { error } = updateContactSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.message });
     }
 
-    const updContact = await updateContactById(req.params.id, req.body);
-
-    if (!updateContactById) {
-      return res.status(404).json({ message: "Not found" });
-    }
     res.status(200).json(updContact);
   } catch (error) {
     next(error);
