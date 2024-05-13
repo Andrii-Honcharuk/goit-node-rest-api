@@ -8,6 +8,7 @@ import {
   listContacts,
   removeContact,
   updateContactById,
+  updateFavoriteContact,
 } from "../services/contactsServices.js";
 
 export const getAllContacts = async (req, res, next) => {
@@ -87,13 +88,11 @@ export const updateContact = async (req, res, next) => {
   }
 };
 
-export const updateFavoriteContact = async (req, res, next) => {
+export const updateStatusContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updStatusContact = await contactsService.updateStatusContact(
-      id,
-      req.body.favorite
-    );
+    console.log("id", id);
+    const updStatusContact = await updateFavoriteContact(id, req.body.favorite);
     if (!updStatusContact) {
       return res.status(404).json({ message: "Not found" });
     }
