@@ -9,7 +9,9 @@ import {
   listContacts,
   removeContact,
   updateContactById,
+  updateFavoriteContact,
 } from "../services/contactsServices.js";
+import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -21,8 +23,14 @@ export const getAllContacts = async (req, res, next) => {
 };
 
 export const getOneContact = async (req, res, next) => {
-  const contact = await getContactById(req.params.id);
   try {
+    const { id } = req.params;
+    // console.log("isValidObjectId(id)", isValidObjectId(id));
+    if (!isValidObjectId(id)) {
+      // res.status(404).send({ message: "Not found" });
+      throw HttpError(400, `${id} is not a valid id`);
+    }
+    const contact = await getContactById(req.params.id);
     if (contact) {
       res.status(200).json(contact);
     } else {
@@ -34,9 +42,13 @@ export const getOneContact = async (req, res, next) => {
 };
 
 export const deleteContact = async (req, res, next) => {
-  const { id } = req.params;
-  const contact = await removeContact(id);
   try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, `${id} is not a valid id`);
+    }
+
+    const contact = await removeContact(id);
     if (contact) {
       res.status(200).json(contact);
     } else {
@@ -67,6 +79,11 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, `${id} is not a valid id`);
+    }
+
     if (Object.keys(req.body).length === 0) {
       return res
         .status(400)
@@ -83,6 +100,23 @@ export const updateContact = async (req, res, next) => {
     }
 
     res.status(200).json(updContact);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateStatusContact = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, `${id} is not a valid id`);
+    }
+
+    const updStatusContact = await updateFavoriteContact(id, req.body.favorite);
+    if (!updStatusContact) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    res.status(200).json(updStatusContact);
   } catch (error) {
     next(error);
   }
