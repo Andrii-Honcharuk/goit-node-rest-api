@@ -72,5 +72,5 @@ export async function logoutUser(req, res, next) {
 
 export async function currentUser(req, res) {
   const { email, subscription } = req.user;
-  res.json({ email, subscription });
+  res.status(200).json({ email, subscription });
 }
