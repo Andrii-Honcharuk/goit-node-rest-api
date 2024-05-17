@@ -14,6 +14,7 @@ import {
 import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
+  console.log({ user: req.user });
   try {
     const contact = await listContacts();
     res.status(200).json(contact);
