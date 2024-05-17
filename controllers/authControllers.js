@@ -22,7 +22,12 @@ export async function register(req, res, next) {
       password: passHash,
     });
 
-    res.status(201).json({ email, subscription: createUser.subscription });
+    res.status(201).json({
+      user: {
+        email: createUser.email,
+        subscription: createUser.subscription,
+      },
+    });
   } catch (error) {
     next(error);
   }
