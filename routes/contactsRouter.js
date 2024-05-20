@@ -1,11 +1,13 @@
+// contactsRouter.js
+
 import express from "express";
 import {
-  getAllContacts,
-  getOneContact,
-  deleteContact,
-  createContact,
-  updateContact,
-  updateStatusContact,
+  createContactController,
+  deleteContactController,
+  getAllContactsController,
+  getOneContactByIdController,
+  updateContactController,
+  updateStatusContactByIdController,
 } from "../controllers/contactsControllers.js";
 import {
   createContactSchema,
@@ -13,35 +15,34 @@ import {
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 import validateBody from "../helpers/validateBody.js";
-import { authenticate } from "../middlewares/authenticate.js";
+import { checkAuthenticate } from "../middlewares/checkAuthenticate.js";
 
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", authenticate, getAllContacts);
+contactsRouter.use(checkAuthenticate);
 
-contactsRouter.get("/:id", authenticate, getOneContact);
+contactsRouter.get("/", getAllContactsController);
 
-contactsRouter.delete("/:id", authenticate, deleteContact);
+contactsRouter.get("/:id", getOneContactByIdController);
+
+contactsRouter.delete("/:id", deleteContactController);
 
 contactsRouter.post(
   "/",
-  authenticate,
   validateBody(createContactSchema),
-  createContact
+  createContactController
 );
 
 contactsRouter.put(
   "/:id",
-  authenticate,
   validateBody(updateContactSchema),
-  updateContact
+  updateContactController
 );
 
 contactsRouter.patch(
   "/:id/favorite",
-  authenticate,
   validateBody(updateContactFavoriteSchema),
-  updateStatusContact
+  updateStatusContactByIdController
 );
 
 export default contactsRouter;
