@@ -19,39 +19,29 @@ export const registerUser = async (email, password) => {
   return { email: user.email, subscription: user.subscription };
 };
 
-// // Логін користувача
 export const loginUser = async (email, password) => {
   const user = await usersRepository.findUserByEmail(email);
 
   if (!user) throw HttpError(401, "Email or password is wrong");
 
-  const isPasswordCorrect = await bcrypt.compare(password, user.password); // Порівнюємо введений пароль з хешем
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
   if (!isPasswordCorrect) {
     throw HttpError(401, "Email or password is wrong");
-  } // Кидаємо помилку, якщо пароль неправильний
-  //   }
+  }
 
   const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
     expiresIn: "7d",
-  }); // Створюємо JWT токен
-  await usersRepository.updateUserToken(user._id, token); // Оновлюємо токен користувача в базі даних
+  });
+
+  await usersRepository.updateUserToken(user._id, token);
 
   return {
     token,
     user: { email: user.email, subscription: user.subscription },
-  }; // Повертаємо токен і дані користувача
+  };
 };
 
-// // Логаут користувача
 export const logoutUser = async (userId) => {
-  await usersRepository.clearUserToken(userId); // Оновлюємо токен користувача на null
+  await usersRepository.clearUserToken(userId);
 };
-
-// // Отримуємо поточного користувача
-// export const getCurrentUser = async (userId) => {
-//   const user = await usersRepository.findUserById(userId); // Знаходимо користувача за його ID
-//   if (!user) {
-//     throw new Error("User not found"); // Кидаємо помилку, якщо користувач не знайдений
-//   }
-//   return { email: user.email, subscription: user.subscription }; // Повертаємо дані користувача
-// };

@@ -1,5 +1,3 @@
-// authenticate.js;
-
 import user from "../db/models/user.js";
 import HttpError from "../helpers/HttpError.js";
 import jwt from "jsonwebtoken";

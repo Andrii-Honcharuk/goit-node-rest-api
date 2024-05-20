@@ -1,5 +1,3 @@
-// // // contactsControllers.js;
-
 import HttpError from "../helpers/HttpError.js";
 import { errorWrapper } from "../helpers/errorWrapper.js";
 import {
@@ -75,7 +73,6 @@ export const createContactController = async (req, res, next) => {
     }
     const userId = req.user.id;
     const contact = await addContact(name, email, phone, userId);
-    // const contact = await addContact({ ...req.body, owner: req.user.id });
 
     res.status(201).json({ contact });
   } catch (error) {
@@ -90,12 +87,6 @@ export const updateContactController = errorWrapper(async (req, res, next) => {
       throw HttpError(400, `${id} is not a valid id`);
     }
 
-    // if (Object.keys(req.body).length === 0) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Body must have at least one field" });
-    // }
-    // переніс в Joi
     const userId = req.user.id;
     const updContact = await updateContactById(id, userId, req.body);
     if (!updContact) {
