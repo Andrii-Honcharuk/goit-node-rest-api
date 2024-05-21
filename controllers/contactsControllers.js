@@ -1,96 +1,94 @@
 import HttpError from "../helpers/HttpError.js";
+import { errorWrapper } from "../helpers/errorWrapper.js";
 import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
+
+import { isValidObjectId } from "mongoose";
 import {
   addContact,
-  getContactById,
-  listContacts,
-  removeContact,
+  getAllContacts,
+  getOneContactById,
+  removeContactById,
   updateContactById,
-  updateFavoriteContact,
+  updateFavoriteStatusContact,
 } from "../services/contactsServices.js";
-import { isValidObjectId } from "mongoose";
 
-export const getAllContacts = async (req, res, next) => {
-  console.log({ user: req.user });
+export const getAllContactsController = errorWrapper(async (req, res, next) => {
   try {
-    const contact = await listContacts();
-    res.status(200).json(contact);
+    const userId = req.user.id;
+    const contacts = await getAllContacts(userId);
+    res.status(200).json(contacts);
   } catch (error) {
     next(error);
   }
-};
+});
 
-export const getOneContact = async (req, res, next) => {
+export const getOneContactByIdController = errorWrapper(
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      if (!isValidObjectId(id)) throw HttpError(400, `${id} is not a valid id`);
+
+      const userId = req.user.id;
+      const contact = await getOneContactById(id, userId);
+      if (contact) {
+        res.status(200).json(contact);
+      } else {
+        res.status(404).json({ message: "Not found" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+export const deleteContactController = errorWrapper(async (req, res, next) => {
   try {
     const { id } = req.params;
-    // console.log("isValidObjectId(id)", isValidObjectId(id));
     if (!isValidObjectId(id)) {
-      // res.status(404).send({ message: "Not found" });
       throw HttpError(400, `${id} is not a valid id`);
     }
-    const contact = await getContactById(req.params.id);
+    const userId = req.user.id;
+    const contact = await removeContactById(id, userId);
     if (contact) {
       res.status(200).json(contact);
     } else {
-      res.status(404).send({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const createContactController = async (req, res, next) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const { error } = createContactSchema.validate({ name, email, phone });
+
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+    const userId = req.user.id;
+    const contact = await addContact(name, email, phone, userId);
+
+    res.status(201).json({ contact });
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteContact = async (req, res, next) => {
+export const updateContactController = errorWrapper(async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
       throw HttpError(400, `${id} is not a valid id`);
     }
 
-    const contact = await removeContact(id);
-    if (contact) {
-      res.status(200).json(contact);
-    } else {
-      res.status(404).send({ message: "Not found" });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const createContact = async (req, res, next) => {
-  const { name, email, phone } = req.body;
-  const { error } = createContactSchema.validate({
-    name,
-    email,
-    phone,
-  });
-  if (typeof error !== "undefined") {
-    return res.status(400).json({ message: error.message });
-  }
-  try {
-    const contact = await addContact(name, email, phone);
-    res.status(201).json(contact);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateContact = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      throw HttpError(400, `${id} is not a valid id`);
-    }
-
-    if (Object.keys(req.body).length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Body must have at least one field" });
-    }
-    const updContact = await updateContactById(req.params.id, req.body);
+    const userId = req.user.id;
+    const updContact = await updateContactById(id, userId, req.body);
     if (!updContact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -104,21 +102,27 @@ export const updateContact = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+});
 
-export const updateStatusContact = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      throw HttpError(400, `${id} is not a valid id`);
+export const updateStatusContactByIdController = errorWrapper(
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      if (!isValidObjectId(id)) {
+        throw HttpError(400, `${id} is not a valid id`);
+      }
+      const userId = req.user.id;
+      const updStatusContact = await updateFavoriteStatusContact(
+        id,
+        userId,
+        req.body.favorite
+      );
+      if (!updStatusContact) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      res.status(200).json(updStatusContact);
+    } catch (error) {
+      next(error);
     }
-
-    const updStatusContact = await updateFavoriteContact(id, req.body.favorite);
-    if (!updStatusContact) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.status(200).json(updStatusContact);
-  } catch (error) {
-    next(error);
   }
-};
+);

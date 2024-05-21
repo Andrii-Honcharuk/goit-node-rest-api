@@ -1,16 +1,25 @@
-import Contact from "../db/models/contact.js";
+import HttpError from "../helpers/HttpError.js";
+import contactsRepository from "../repositories/contactsRepository.js";
 
-export const listContacts = () => Contact.find();
+export const getAllContacts = async (userId) =>
+  await contactsRepository.listContacts(userId);
 
-export const getContactById = (id) => Contact.findOne({ _id: id });
+export const getOneContactById = async (id, userId) => {
+  const contact = await contactsRepository.getContactById(id, userId);
+  if (!contact) {
+    throw HttpError(404, "Contact not found");
+  }
+  return contact;
+};
 
-export const removeContact = (id) => Contact.findOneAndDelete({ _id: id });
+export const removeContactById = async (id, userId) =>
+  await contactsRepository.removeContact(id, userId);
 
-export const addContact = (name, email, phone) =>
-  Contact.create({ name, email, phone });
+export const addContact = async (name, email, phone, userId) =>
+  await contactsRepository.addContact(name, email, phone, userId);
 
-export const updateContactById = (id, data) =>
-  Contact.findByIdAndUpdate({ _id: id }, data, { new: true });
+export const updateContactById = async (id, userId, data) =>
+  await contactsRepository.updateContactById(id, userId, data);
 
-export const updateFavoriteContact = (id, status) =>
-  Contact.findByIdAndUpdate(id, { favorite: status }, { new: true });
+export const updateFavoriteStatusContact = async (id, userId, status) =>
+  await contactsRepository.updateFavoriteContactById(id, userId, status);
