@@ -1,42 +1,30 @@
-import HttpError from "../helpers/HttpError.js";
+import { errorWrapper } from "../helpers/errorWrapper.js";
 import {
   loginUser,
   logoutUser,
   registerUser,
 } from "../services/usersServices.js";
 
-export async function registerUserController(req, res, next) {
-  try {
-    const { email, password } = req.body;
-    const user = await registerUser(email, password);
+export const registerUserController = errorWrapper(async (req, res, next) => {
+  const { email, password } = req.body;
+  const user = await registerUser(email, password);
 
-    res.status(201).json({ user });
-  } catch (error) {
-    next(HttpError(409, error.message));
-  }
-}
+  res.status(201).json({ user });
+});
 
-export async function loginUserController(req, res, next) {
-  try {
-    const { email, password } = req.body;
-    const { token, user } = await loginUser(email, password);
+export const loginUserController = errorWrapper(async (req, res, next) => {
+  const { email, password } = req.body;
+  const { token, user } = await loginUser(email, password);
 
-    res.status(200).json({ token, user });
-  } catch (error) {
-    next(HttpError(401, error.message));
-  }
-}
+  res.status(200).json({ token, user });
+});
 
-export async function logoutUserController(req, res, next) {
-  try {
-    await logoutUser(req.user.id);
-    res.status(204).end();
-  } catch (error) {
-    next(error);
-  }
-}
+export const logoutUserController = errorWrapper(async (req, res, next) => {
+  await logoutUser(req.user.id);
+  res.status(204).end();
+});
 
-export async function currentUserController(req, res) {
+export const currentUserController = errorWrapper(async (req, res) => {
   const { email, subscription } = req.user;
   res.status(200).json({ email, subscription });
-}
+});
