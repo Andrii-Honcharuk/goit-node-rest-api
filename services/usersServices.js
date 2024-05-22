@@ -1,5 +1,7 @@
+// usersServices;
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 import usersRepository from "../repositories/usersRepository.js";
 import HttpError from "../helpers/HttpError.js";
 
@@ -11,12 +13,25 @@ export const registerUser = async (email, password) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Генерація URL аватарки за допомогою gravatar
+  const avatarURL = gravatar.url(
+    email,
+    { s: "200", r: "pg", d: "retro" },
+    true
+  );
+
   const user = await usersRepository.createUser({
     email,
     password: hashedPassword,
+    avatarURL, // URL аватарки
   });
 
-  return { email: user.email, subscription: user.subscription };
+  return {
+    email: user.email,
+    subscription: user.subscription,
+    avatarURL: user.avatarURL,
+  };
 };
 
 export const loginUser = async (email, password) => {
@@ -44,4 +59,12 @@ export const loginUser = async (email, password) => {
 
 export const logoutUser = async (userId) => {
   await usersRepository.clearUserToken(userId);
+};
+
+export const updateUserAvatarById = async (userId, avatarURL) => {
+  const updatedUser = await usersRepository.updateUserAvatar(userId, avatarURL);
+  if (!updatedUser) {
+    throw new Error("User not found");
+  }
+  return updatedUser;
 };

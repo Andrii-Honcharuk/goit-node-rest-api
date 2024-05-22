@@ -18,9 +18,11 @@ import {
 export const getAllContactsController = errorWrapper(async (req, res, next) => {
   try {
     const userId = req.user.id;
+    console.log(userId);
     const contacts = await getAllContacts(userId);
     res.status(200).json(contacts);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 });

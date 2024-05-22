@@ -1,3 +1,4 @@
+// usersRepository;
 import User from "../db/models/user.js";
 
 const findUserByEmail = (email) => User.findOne({ email });
@@ -12,10 +13,14 @@ const clearUserToken = (id) =>
 
 const findUserById = (id) => User.findById(id);
 
+const updateUserAvatar = (id, avatarURL) =>
+  User.findByIdAndUpdate(id, { avatarURL }, { new: true });
+
 export default {
   findUserByEmail,
   createUser,
   updateUserToken,
   clearUserToken,
   findUserById,
+  updateUserAvatar,
 };
