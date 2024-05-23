@@ -1,5 +1,7 @@
 import path from "node:path";
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
+
+import Jimp from "jimp";
 
 import HttpError from "../helpers/HttpError.js";
 import { errorWrapper } from "../helpers/errorWrapper.js";
@@ -41,20 +43,16 @@ export const uploadAvatarUserController = errorWrapper(
     const tmpPath = req.file.path;
     const newPath = path.resolve("public/avatars", req.file.filename);
 
-    fs.rename(tmpPath, newPath, async (err) => {
-      if (err) {
-        console.error(err);
-        throw HttpError(500, "Error moving file");
-      }
+    const image = await Jimp.read(tmpPath);
 
-      const avatarURL = `/avatars/${req.file.filename}`;
+    await image.resize(250, 250).writeAsync(newPath);
 
-      try {
-        await updateUserAvatarById(req.user.id, avatarURL);
-        res.status(200).json({ avatarUrl: avatarURL });
-      } catch (error) {
-        throw HttpError(500, error.message);
-      }
-    });
+    await fs.rename(tmpPath, newPath);
+
+    const avatarURL = `/avatars/${req.file.filename}`;
+
+    await updateUserAvatarById(req.user.id, avatarURL);
+
+    res.status(200).json({ avatarUrl: avatarURL });
   }
 );

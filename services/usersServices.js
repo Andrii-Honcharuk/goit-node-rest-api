@@ -62,7 +62,7 @@ export const logoutUser = async (userId) => {
 export const updateUserAvatarById = async (userId, avatarURL) => {
   const updatedUser = await usersRepository.updateUserAvatar(userId, avatarURL);
   if (!updatedUser) {
-    throw new Error("User not found");
+    throw HttpError("User not found");
   }
   return updatedUser;
 };
