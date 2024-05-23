@@ -41,16 +41,12 @@ export const uploadAvatarUserController = errorWrapper(
     const tmpPath = req.file.path;
     const newPath = path.resolve("public/avatars", req.file.filename);
 
-    console.log(`Temporary file path: ${tmpPath}`);
-    console.log(`New file path: ${newPath}`);
-
     fs.rename(tmpPath, newPath, async (err) => {
       if (err) {
         console.error(err);
         throw HttpError(500, "Error moving file");
       }
 
-      console.log(`File uploaded: ${newPath}`);
       const avatarURL = `/avatars/${req.file.filename}`;
 
       try {
