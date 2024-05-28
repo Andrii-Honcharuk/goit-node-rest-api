@@ -1,6 +1,8 @@
 import path from "node:path";
 import * as fs from "node:fs/promises";
 
+import mail from "../helpers/sendMail.js";
+
 import Jimp from "jimp";
 
 import HttpError from "../helpers/HttpError.js";
@@ -9,12 +11,23 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resendVerificationEmail,
   updateUserAvatarById,
+  verifyUserToken,
 } from "../services/usersServices.js";
+import { text } from "express";
 
 export const registerUserController = errorWrapper(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await registerUser(email, password);
+
+  mail.sendMail({
+    to: email,
+    from: "goncharukam@gmail.com",
+    subject: "Welcome to register",
+    html: `Confirm email. Please click <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a>`,
+    text: `Confirm email. Please click http://localhost:3000/api/users/verify/${user.verificationToken}`,
+  });
 
   res.status(201).json({ user });
 });
@@ -54,5 +67,27 @@ export const uploadAvatarUserController = errorWrapper(
     await updateUserAvatarById(req.user.id, avatarURL);
 
     res.status(200).json({ avatarUrl: avatarURL });
+  }
+);
+
+export const verifyUserController = errorWrapper(async (req, res, next) => {
+  const { verificationToken } = req.params;
+  await verifyUserToken(verificationToken);
+  res.status(200).json({ message: "Verification successful" });
+});
+
+export const resendVerificationEmailController = errorWrapper(
+  async (req, res, next) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const result = await resendVerificationEmail(email);
+    if (result.error) {
+      return res.status(400).json({ message: result.error });
+    }
+
+    res.status(200).json({ message: "Verification email sent" });
   }
 );

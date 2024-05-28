@@ -15,6 +15,17 @@ const findUserById = (id) => User.findById(id);
 const updateUserAvatar = (id, avatarURL) =>
   User.findByIdAndUpdate(id, { avatarURL }, { new: true });
 
+const verifyTokenUser = async (verifyToken) => {
+  const user = await User.findOne({ verificationToken: verifyToken });
+
+  const verifyUser = await User.findByIdAndUpdate(user._id.toString(), {
+    verify: true,
+    verificationToken: null,
+  });
+
+  return verifyUser;
+};
+
 export default {
   findUserByEmail,
   createUser,
@@ -22,4 +33,5 @@ export default {
   clearUserToken,
   findUserById,
   updateUserAvatar,
+  verifyTokenUser,
 };

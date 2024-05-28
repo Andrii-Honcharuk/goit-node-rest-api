@@ -5,12 +5,15 @@ import {
   loginUserController,
   logoutUserController,
   registerUserController,
+  resendVerificationEmailController,
   uploadAvatarUserController,
+  verifyUserController,
 } from "../controllers/usersControllers.js";
 import { authSchema, loginSchema } from "../schemas/usersSchemas.js";
 import { checkAuthenticate } from "../middlewares/checkAuthenticate.js";
 
 import uploadMiddleware from "../middlewares/upload.js";
+// import { verify } from "jsonwebtoken";
 
 const usersRouter = express.Router();
 const jsonParser = express.json();
@@ -25,6 +28,13 @@ usersRouter.patch(
   checkAuthenticate,
   uploadMiddleware.single("avatar"),
   uploadAvatarUserController
+);
+
+usersRouter.get("/verify/:verificationToken", verifyUserController);
+usersRouter.post(
+  "/verify",
+  validateBody(loginSchema),
+  resendVerificationEmailController
 );
 
 export default usersRouter;
