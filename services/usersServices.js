@@ -29,6 +29,14 @@ export const registerUser = async (email, password) => {
     verificationToken,
   });
 
+  await mail.sendMail({
+    to: email,
+    from: "goncharukam@gmail.com",
+    subject: "Welcome to register",
+    html: `Confirm email. Please click <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a>`,
+    text: `Confirm email. Please click http://localhost:3000/api/users/verify/${user.verificationToken}`,
+  });
+
   return {
     email: user.email,
     subscription: user.subscription,
@@ -77,6 +85,10 @@ export const verifyUserToken = async (verifyToken) => {
 
   if (!user) throw HttpError(404, "User not found");
 
+  if (user.alreadyVerified) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+
   return user;
 };
 
@@ -90,7 +102,7 @@ export const resendVerificationEmail = async (email) => {
     return { error: "Verification has already been passed" };
   }
 
-  mail.sendMail({
+  await mail.sendMail({
     to: email,
     from: "goncharukam@gmail.com",
     subject: "Email Verification",

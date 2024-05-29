@@ -18,6 +18,14 @@ const updateUserAvatar = (id, avatarURL) =>
 const verifyTokenUser = async (verifyToken) => {
   const user = await User.findOne({ verificationToken: verifyToken });
 
+  if (!user) {
+    return null;
+  }
+
+  if (user.verify) {
+    return { alreadyVerified: true };
+  }
+
   const verifyUser = await User.findByIdAndUpdate(user._id.toString(), {
     verify: true,
     verificationToken: null,
