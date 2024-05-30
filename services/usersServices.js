@@ -1,10 +1,12 @@
+// usersServices;
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import usersRepository from "../repositories/usersRepository.js";
 import HttpError from "../helpers/HttpError.js";
 import gravatar from "gravatar";
 import { nanoid } from "nanoid";
-import mail from "../helpers/sendMail.js";
+import sendMail from "../helpers/sendMail.js";
 
 export const registerUser = async (email, password) => {
   const existingUser = await usersRepository.findUserByEmail(email);
@@ -29,7 +31,7 @@ export const registerUser = async (email, password) => {
     verificationToken,
   });
 
-  await mail.sendMail({
+  await sendMail({
     to: email,
     from: "goncharukam@gmail.com",
     subject: "Welcome to register",
@@ -102,7 +104,7 @@ export const resendVerificationEmail = async (email) => {
     return { error: "Verification has already been passed" };
   }
 
-  await mail.sendMail({
+  await sendMail({
     to: email,
     from: "goncharukam@gmail.com",
     subject: "Email Verification",

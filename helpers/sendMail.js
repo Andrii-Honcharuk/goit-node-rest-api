@@ -1,3 +1,5 @@
+// sendMail;
+
 import nodemailer from "nodemailer";
 import "dotenv/config";
 
@@ -14,4 +16,4 @@ async function sendMail(message) {
   return transport.sendMail(message);
 }
 
-export default { sendMail };
+export default sendMail;

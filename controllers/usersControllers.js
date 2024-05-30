@@ -68,9 +68,6 @@ export const verifyUserController = errorWrapper(async (req, res, next) => {
 export const resendVerificationEmailController = errorWrapper(
   async (req, res, next) => {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "missing required field email" });
-    }
 
     const result = await resendVerificationEmail(email);
     if (result.error) {
